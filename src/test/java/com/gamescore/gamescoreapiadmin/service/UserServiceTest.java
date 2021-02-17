@@ -1,6 +1,6 @@
 package com.gamescore.gamescoreapiadmin.service;
 
-import com.gamescore.gamescoreapiadmin.dto.UpdateUserDTO;
+import com.gamescore.gamescoreapiadmin.dto.UserDTO;
 import com.gamescore.gamescoreapiadmin.entity.User;
 import com.gamescore.gamescoreapiadmin.enumerator.UserMessages;
 import com.gamescore.gamescoreapiadmin.enumerator.UserRoles;
@@ -25,7 +25,7 @@ class UserServiceTest {
     private UserRepository userRepository;
 
     @Test
-    @DisplayName("Save creates a new user when successful")
+    @DisplayName("createUser creates a new user when successful")
     public void save_CreatesUser_whenSuccessful() {
 
         final User newUser = createUser();
@@ -35,9 +35,9 @@ class UserServiceTest {
         BDDMockito.when(userRepository.save(newUser))
                 .thenReturn(Mono.just(newUser));
 
-        StepVerifier.create(userService.createUser(newUser))
+        StepVerifier.create(userService.create(newUser))
                 .expectSubscription()
-                .expectNext(newUser)
+                .expectNext(newUser.withPassword(UserMessages.SENSITIVE_DATA.name()))
                 .verifyComplete();
     }
 
@@ -49,9 +49,9 @@ class UserServiceTest {
         BDDMockito.when(userRepository.findByEmail(newUser.getEmail()))
                 .thenReturn(Mono.just(newUser));
 
-        StepVerifier.create(userService.createUser(newUser))
+        StepVerifier.create(userService.create(newUser))
                 .expectSubscription()
-                .expectErrorMessage("400 BAD_REQUEST \"".concat(UserMessages.USER_ALREADY_EXIST_ON_DATABASE.name()).concat("\""))
+                .expectErrorMessage("400 BAD_REQUEST \"".concat(UserMessages.USER_EMAIL_ALREADY_EXIST_DATABASE.name()).concat("\""))
                 .verify();
     }
 
@@ -68,7 +68,7 @@ class UserServiceTest {
         BDDMockito.when(userRepository.save(newUser))
                 .thenReturn(Mono.just(newUser));
 
-        StepVerifier.create(userService.createUser(newUser))
+        StepVerifier.create(userService.create(newUser))
                 .expectSubscription()
                 .expectErrorMessage("400 BAD_REQUEST \"".concat(UserMessages.INVALID_USER_ROLE.name()).concat("\""))
                 .verify();
@@ -79,7 +79,7 @@ class UserServiceTest {
     public void update_SaveUpdateUser_whenSuccessful() {
 
         final User oldUser = createUser();
-        final UpdateUserDTO updateUserDTO = createUpdateUserDTO();
+        final UserDTO userDTO = createUpdateUserDTO();
         final User userUpdated = User.builder()
                 .name("Cavalo Cansado")
                 .email("sobrancela@capitao.com")
@@ -93,7 +93,7 @@ class UserServiceTest {
         BDDMockito.when(userRepository.save(userUpdated))
                 .thenReturn(Mono.just(userUpdated));
 
-        StepVerifier.create(userService.update(oldUser.getEmail(), updateUserDTO))
+        StepVerifier.create(userService.update(oldUser.getEmail(), userDTO))
                 .expectSubscription()
                 .expectNext(userUpdated).verifyComplete();
     }
@@ -106,9 +106,9 @@ class UserServiceTest {
         BDDMockito.when(userRepository.findByEmail(oldUser.getEmail()))
                 .thenReturn(Mono.empty());
 
-        final UpdateUserDTO updateUserDTO = createUpdateUserDTO();
+        final UserDTO userDTO = createUpdateUserDTO();
 
-        StepVerifier.create(userService.update(oldUser.getEmail(), updateUserDTO))
+        StepVerifier.create(userService.update(oldUser.getEmail(), userDTO))
                 .expectSubscription()
                 .expectErrorMessage("404 NOT_FOUND \"".concat(UserMessages.USER_NOT_FOUND.name()).concat("\""))
                 .verify();
@@ -119,12 +119,12 @@ class UserServiceTest {
     public void update_ReturnMonoError_whenUserHasInvalidRole() {
 
         final User oldUser = createUser();
-        final UpdateUserDTO updateUserDTO = createUpdateUserDTO();
-        updateUserDTO.setRole("pipoca");
+        final UserDTO userDTO = createUpdateUserDTO();
+        userDTO.setRole("pipoca");
         BDDMockito.when(userRepository.findByEmail(oldUser.getEmail()))
                 .thenReturn(Mono.just(oldUser));
 
-        StepVerifier.create(userService.update(oldUser.getEmail(), updateUserDTO))
+        StepVerifier.create(userService.update(oldUser.getEmail(), userDTO))
                 .expectSubscription()
                 .expectErrorMessage("400 BAD_REQUEST \"".concat(UserMessages.INVALID_USER_ROLE.name()).concat("\""))
                 .verify();
@@ -168,8 +168,8 @@ class UserServiceTest {
                 .build();
     }
 
-    private UpdateUserDTO createUpdateUserDTO() {
-        return UpdateUserDTO.builder()
+    private UserDTO createUpdateUserDTO() {
+        return UserDTO.builder()
                 .name("Cavalo Cansado")
                 .email("sobrancela@capitao.com")
                 .password("desumano")

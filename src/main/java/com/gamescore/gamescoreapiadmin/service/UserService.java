@@ -1,6 +1,6 @@
 package com.gamescore.gamescoreapiadmin.service;
 
-import com.gamescore.gamescoreapiadmin.dto.UpdateUserDTO;
+import com.gamescore.gamescoreapiadmin.dto.UserDTO;
 import com.gamescore.gamescoreapiadmin.entity.User;
 import com.gamescore.gamescoreapiadmin.enumerator.UserMessages;
 import com.gamescore.gamescoreapiadmin.enumerator.UserRoles;
@@ -32,14 +32,14 @@ public class UserService {
                 monoResponseStatusNotFoundException());
     }
 
-    public Mono<User> createUser(User newUser) {
+    public Mono<User> create(final User newUser) {
         log.info("Create a new user with email: {}", newUser.getEmail());
         return Mono.just(newUser.getEmail())
                 .map(userRepository::findByEmail)
                 .flatMap(userDb -> userDb.hasElement()
-                        .flatMap(exist -> exist ? monoResponseStatusUserAlreadyExistInDatabaseException().log("User already exist")
+                        .flatMap(exist -> exist ? monoResponseStatusUserEmailAlreadyExistInDatabaseException().log("User already exist")
                                 : isValidEnumIgnoreCase(UserRoles.class, newUser.getRole()) ? userRepository.save(newUser).log("User created") : monoResponseStatusInvalidUserRoleException().log("Invalid user role"))
-                        .then(Mono.just(newUser)));
+                        .then(Mono.just(newUser.withPassword(UserMessages.SENSITIVE_DATA.name()))));
 
 // not working .. I don't know why
 //        return userRepository.findByEmail(newUser.getEmail())
@@ -53,15 +53,15 @@ public class UserService {
 
     }
 
-    public Mono<User> update(final String email, final UpdateUserDTO updateUserDTO) {
+    public Mono<User> update(final String email, final UserDTO userDTO) {
         log.info("Update an user with email: {}", email);
         return Mono.just(email)
                 .map(this::findByEmail)
                 .flatMap(userFound -> {
-                    if (!isValidEnumIgnoreCase(UserRoles.class, updateUserDTO.getRole())) {
+                    if (!isValidEnumIgnoreCase(UserRoles.class, userDTO.getRole())) {
                         return monoResponseStatusInvalidUserRoleException();
                     }
-                    User userUpdated = updateUserFields(updateUserDTO, userFound.block());
+                    User userUpdated = updateUserFields(userDTO, userFound.block());
                     userRepository.save(userUpdated).log("User updated");
                     return Mono.just(userUpdated);
                 });
@@ -73,34 +73,32 @@ public class UserService {
                 .flatMap(userRepository::delete).log("User deleted");
     }
 
-
-    private User updateUserFields(final UpdateUserDTO updateUserDTO, final User userTobeSaved) {
-        if (isNotBlank(updateUserDTO.getEmail())) {
-            userTobeSaved.setEmail(updateUserDTO.getEmail());
+    private User updateUserFields(final UserDTO userDTO, final User userTobeSaved) {
+        if (isNotBlank(userDTO.getEmail())) {
+            userTobeSaved.setEmail(userDTO.getEmail());
         }
 
-        if (isNotBlank(updateUserDTO.getName())) {
-            userTobeSaved.setName(updateUserDTO.getName());
+        if (isNotBlank(userDTO.getName())) {
+            userTobeSaved.setName(userDTO.getName());
         }
 
-        if (isNotBlank(updateUserDTO.getPassword())) {
-            userTobeSaved.setPassword(updateUserDTO.getPassword());
+        if (isNotBlank(userDTO.getPassword())) {
+            userTobeSaved.setPassword(userDTO.getPassword());
         }
 
-        if (isNotBlank(updateUserDTO.getRole())) {
-            userTobeSaved.setRole(updateUserDTO.getRole());
+        if (isNotBlank(userDTO.getRole())) {
+            userTobeSaved.setRole(userDTO.getRole());
         }
 
         return userTobeSaved;
     }
 
-
     public <T> Mono<T> monoResponseStatusNotFoundException() {
         return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.name()));
     }
 
-    public <T> Mono<T> monoResponseStatusUserAlreadyExistInDatabaseException() {
-        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, UserMessages.USER_ALREADY_EXIST_ON_DATABASE.name()));
+    public <T> Mono<T> monoResponseStatusUserEmailAlreadyExistInDatabaseException() {
+        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, UserMessages.USER_EMAIL_ALREADY_EXIST_DATABASE.name()));
     }
 
     public <T> Mono<T> monoResponseStatusInvalidUserRoleException() {

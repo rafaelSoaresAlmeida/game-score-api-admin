@@ -1,6 +1,6 @@
 package com.gamescore.gamescoreapiadmin.controller;
 
-import com.gamescore.gamescoreapiadmin.dto.UpdateUserDTO;
+import com.gamescore.gamescoreapiadmin.dto.UserDTO;
 import com.gamescore.gamescoreapiadmin.entity.User;
 import com.gamescore.gamescoreapiadmin.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,7 +32,7 @@ public class UserController {
     @GetMapping(path = "{email}")
     @Operation(summary = "Find a user by email",
             tags = {"User"})
-    public Mono<User> findUserById(@PathVariable final String email) {
+    public Mono<User> findUserByEmail(@PathVariable final String email) {
         return userService.findByEmail(email);
     }
 
@@ -40,16 +40,16 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a new user in database",
             tags = {"User"})
-    public Mono<User> createUser(@Valid @RequestBody final User user){
-        return  userService.createUser(user);
+    public Mono<User> createUser(@Valid @RequestBody final UserDTO userDTO){
+        return  userService.create(userDTO.toUser());
     }
 
-    @PutMapping(path = "{id}")
+    @PutMapping(path = "{email}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Update an user that already exist in database",
             tags = {"User"})
-    public Mono<User> updateUser(@PathVariable final String email, @Valid @RequestBody final UpdateUserDTO updateUserDTO){
-        return  userService.update(email, updateUserDTO);
+    public Mono<User> updateUser(@PathVariable final String email, @RequestBody final UserDTO userDTO){
+        return  userService.update(email, userDTO);
     }
 
     @DeleteMapping(path = "{email}")
