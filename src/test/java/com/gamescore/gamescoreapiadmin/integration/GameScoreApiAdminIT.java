@@ -1,4 +1,4 @@
-package com.gamescore.gamescoreapiadmin.service.integration;
+package com.gamescore.gamescoreapiadmin.integration;
 
 import com.gamescore.gamescoreapiadmin.dto.UserDTO;
 import com.gamescore.gamescoreapiadmin.entity.User;
@@ -118,7 +118,6 @@ public class GameScoreApiAdminIT {
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404);
         // .jsonPath("$.developerMessage").isEqualTo("A ResponseStatusException Happened");
-
     }
 
     @Test

@@ -1,4 +1,4 @@
-package com.gamescore.gamescoreapiadmin.service.configuration;
+package com.gamescore.gamescoreapiadmin.configuration;
 
 import com.mongodb.reactivestreams.client.MongoClient;
 import org.springframework.beans.factory.annotation.Autowired;
