@@ -61,9 +61,11 @@ public class UserService {
                     if (!isValidEnumIgnoreCase(UserRoles.class, userDTO.getRole())) {
                         return monoResponseStatusInvalidUserRoleException();
                     }
-                    User userUpdated = updateUserFields(userDTO, userFound.block());
-                    userRepository.save(userUpdated).log("User updated");
-                    return Mono.just(userUpdated);
+
+                    return userFound.flatMap(user -> {
+                        final User userUpdated = updateUserFields(userDTO, user);
+                        return userRepository.save(userUpdated).log("User updated");
+                    });
                 });
     }
 

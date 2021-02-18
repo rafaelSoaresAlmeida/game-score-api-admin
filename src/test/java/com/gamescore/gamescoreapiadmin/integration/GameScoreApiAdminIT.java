@@ -5,6 +5,7 @@ import com.gamescore.gamescoreapiadmin.entity.User;
 import com.gamescore.gamescoreapiadmin.enumerator.UserMessages;
 import com.gamescore.gamescoreapiadmin.enumerator.UserRoles;
 import com.gamescore.gamescoreapiadmin.repository.UserRepository;
+import de.bwaldvogel.mongo.backend.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,8 +32,8 @@ public class GameScoreApiAdminIT {
     @Autowired
     private UserRepository userRepository;
 
-    private User desumanoUser;
-    private User thacigodUser;
+    private User testUserOne;
+    private User testUserTwo;
 
 
     private void initializeData() {
@@ -56,13 +57,13 @@ public class GameScoreApiAdminIT {
                 .flatMap(userRepository::save)
                 .blockLast();
 
-        desumanoUser = User.builder()
+        testUserOne = User.builder()
                 .email("capitao@desumano.com")
                 .name("Maicross")
                 .role(UserRoles.ADMIN.name())
                 .build();
 
-        thacigodUser = User.builder()
+        testUserTwo = User.builder()
                 .email("Joelho@titanio.com")
                 .name("Thaci")
                 .role(UserRoles.USER.name())
@@ -91,7 +92,7 @@ public class GameScoreApiAdminIT {
                 .exchange().expectStatus().is2xxSuccessful()
                 .expectBodyList(User.class)
                 .hasSize(2)
-                .contains(desumanoUser, thacigodUser
+                .contains(testUserOne, testUserTwo
                 );
     }
 
@@ -100,11 +101,11 @@ public class GameScoreApiAdminIT {
     public void findByEmail_ReturnMonoUser_WhenSuccessful() {
         webTestClient
                 .get()
-                .uri("/user/".concat(thacigodUser.getEmail()))
+                .uri("/user/".concat(testUserTwo.getEmail()))
                 //        .headers(headers -> headers.setBasicAuth("thacigod", "polivalente"))
                 .exchange().expectStatus().is2xxSuccessful()
                 .expectBody(User.class)
-                .isEqualTo(thacigodUser);
+                .isEqualTo(testUserTwo);
     }
 
     @Test
@@ -123,12 +124,7 @@ public class GameScoreApiAdminIT {
     @Test
     @DisplayName("createUser creates an user when successful")
     public void createUser_CreatesUser_whenSuccessful() {
-        final UserDTO userDTOToBeSaved = UserDTO.builder()
-                .email("robinho@nao_.com")
-                .name("generico")
-                .password("fichaClean")
-                .role(UserRoles.ADMIN.name())
-                .build();
+        final UserDTO userDTOToBeSaved = createNewUserDTO();
 
         webTestClient
                 .post()
@@ -139,7 +135,12 @@ public class GameScoreApiAdminIT {
                 .exchange()
                 .expectStatus().isCreated()
                 .expectBody(User.class)
-                .consumeWith(response -> response.getResponseBody().getName().equals("rob_generico"));
+                .consumeWith(response -> {
+                    Assert.equals(response.getResponseBody().getEmail(), userDTOToBeSaved.getEmail());
+                    Assert.equals(response.getResponseBody().getName(), userDTOToBeSaved.getName());
+                    Assert.isNull(response.getResponseBody().getPassword());
+                    Assert.equals(response.getResponseBody().getRole(), UserRoles.USER.name());
+                });
     }
 
     @Test
@@ -163,11 +164,8 @@ public class GameScoreApiAdminIT {
     @Test
     @DisplayName("createUser return a mono error when user email already exist in database")
     public void createUser_ReturnsError_whenUserEmailAlreadyExistInDatabase() {
-        final UserDTO userDTOToBeSaved = UserDTO.builder()
-                .email("capitao@desumano.com")
-                .name("generico")
-                .password("fichaClean")
-                .role(UserRoles.ADMIN.name()).build();
+        final UserDTO userDTOToBeSaved = createNewUserDTO()
+                .withEmail(testUserOne.getEmail());
 
         webTestClient
                 .post()
@@ -185,11 +183,8 @@ public class GameScoreApiAdminIT {
     @Test
     @DisplayName("createUser return a mono error when user role invalid")
     public void createUser_ReturnsError_whenUserRoleIsInvalid() {
-        final UserDTO userDTOToBeSaved = UserDTO.builder()
-                .email("jael@cruel.com")
-                .name("generico")
-                .password("basalto_chuteira")
-                .role("Master_Blaster_role").build();
+        final UserDTO userDTOToBeSaved = createNewUserDTO()
+                .withRole("Master_Blaster_role");
 
         webTestClient
                 .post()
@@ -206,25 +201,49 @@ public class GameScoreApiAdminIT {
 
 
     @Test
-    @DisplayName("updateUser updated user and returns empty mono when successful")
+    @DisplayName("updateUser updated user and returns user mono updated when successful")
     public void updateUser_SaveUpdateUser_whenSuccessful() {
+        final UserDTO userDTO = createNewUserDTO();
+
+        webTestClient
+                .put()
+                .uri("/user/".concat(testUserOne.getEmail()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(userDTO))
+                //     .headers(headers -> headers.setBasicAuth("cavalo", "cansado"))
+                .exchange()
+                .expectStatus().is2xxSuccessful()
+                .expectBody(User.class)
+                .consumeWith(response -> {
+                    Assert.equals(response.getResponseBody().getEmail(), userDTO.getEmail());
+                    Assert.equals(response.getResponseBody().getName(), userDTO.getName());
+                    Assert.isNull(response.getResponseBody().getPassword());
+                    Assert.equals(response.getResponseBody().getRole(), UserRoles.USER.name());
+                });
+    }
+
+    @Test
+    @DisplayName("updateUser updated user role and returns user mono updated when successful")
+    public void updateUser_SaveUpdateUserRole_whenSuccessful() {
         final UserDTO userDTO = UserDTO.builder()
-                .email("jp@Caminha.campo")
-                .name("lerdo")
-                .password("nao_pifa")
                 .role(UserRoles.USER.name())
                 .build();
 
         webTestClient
                 .put()
-                .uri("/user/".concat(desumanoUser.getEmail()))
+                .uri("/user/".concat(testUserOne.getEmail()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(userDTO))
-                .headers(headers -> headers.setBasicAuth("cavalo", "cansado"))
+                //     .headers(headers -> headers.setBasicAuth("cavalo", "cansado"))
                 .exchange()
-                .expectStatus().isNoContent()
-                .expectBody()
-                .isEmpty();
+                .expectStatus().is2xxSuccessful()
+                .expectBody(User.class)
+                .consumeWith(response -> {
+                    Assert.equals(response.getResponseBody().getEmail(), testUserOne.getEmail());
+                    Assert.equals(response.getResponseBody().getName(), testUserOne.getName());
+                    Assert.isNull(response.getResponseBody().getPassword());
+                    Assert.equals(response.getResponseBody().getRole(), UserRoles.USER.name());
+                });
     }
 
     @Test
@@ -244,62 +263,75 @@ public class GameScoreApiAdminIT {
                 .expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404);
+    }
+
+    @Test
+    @DisplayName("Update returns Mono Error with bad request when user email(query param) is empty")
+    public void update_ReturnMonoError_whenEmailIsEmpty() {
+        final UserDTO userDTO = UserDTO.builder()
+                .role(UserRoles.USER.name())
+                .build();
+
+        webTestClient
+                .put()
+                .uri("/user/")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(userDTO))
+                //      .headers(headers -> headers.setBasicAuth("cavalo", "cansado"))
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(405);
         //          .jsonPath("$.developerMessage").isEqualTo("A ResponseStatusException Happened");
     }
-//
-//    @Test
-//    @DisplayName("Update returns Mono Error with bad request when id is empty")
-//    public void update_ReturnMonoError_whenIdIsEmpty() {
-//        final Anime animeNewName = Anime.builder().name("Detonator Orgun Failed").build();
-//        webTestClient
-//                .put()
-//                .uri("/animes/")
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .body(BodyInserters.fromValue(animeNewName))
-//                .headers(headers -> headers.setBasicAuth("cavalo", "cansado"))
-//                .exchange()
-//                .expectStatus().is4xxClientError()
-//                .expectBody()
-//                .jsonPath("$.status").isEqualTo(405);
-//    }
-//
-//    @Test
-//    @DisplayName("Delete removes the anime when successful")
-//    public void delete_RemovesAnime_whenSuccessful() {
-//        webTestClient
-//                .delete()
-//                .uri("/animes/2")
-//                .headers(headers -> headers.setBasicAuth("cavalo", "cansado"))
-//                .exchange()
-//                .expectStatus().isNoContent()
-//                .expectBody()
-//                .isEmpty();
-//    }
-//
-//    @Test
-//    @DisplayName("Delete returns Mono error when anime does not exist")
-//    public void delete_ReturnMonoError_WhenEmptyMonoIsReturned() {
-//        webTestClient
-//                .delete()
-//                .uri("/animes/99999")
-//                .headers(headers -> headers.setBasicAuth("cavalo", "cansado"))
-//                .exchange()
-//                .expectStatus().isNotFound()
-//                .expectBody()
-//                .jsonPath("$.status").isEqualTo(404)
-//                .jsonPath("$.developerMessage").isEqualTo("A ResponseStatusException Happened");
-//    }
-//
-//    @Test
-//    @DisplayName("Delete returns Mono error with bad request when id is empty")
-//    public void delete_ReturnMonoError_whenIdIsEmpty() {
-//        webTestClient
-//                .delete()
-//                .uri("/animes")
-//                .headers(headers -> headers.setBasicAuth("cavalo", "cansado"))
-//                .exchange()
-//                .expectStatus().is4xxClientError()
-//                .expectBody()
-//                .jsonPath("$.status").isEqualTo(405);
-//    }
+
+    @Test
+    @DisplayName("Delete removes the user when successful")
+    public void delete_RemovesUser_whenSuccessful() {
+        webTestClient
+                .delete()
+                .uri("/user/".concat(testUserTwo.getEmail()))
+                //       .headers(headers -> headers.setBasicAuth("cavalo", "cansado"))
+                .exchange()
+                .expectStatus().isNoContent()
+                .expectBody()
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Delete returns Mono error when user does not exist")
+    public void delete_ReturnMonoError_WhenEmptyMonoIsReturned() {
+        webTestClient
+                .delete()
+                .uri("/user/vander@Delay.naoPegaPenalty")
+                //   .headers(headers -> headers.setBasicAuth("cavalo", "cansado"))
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404);
+
+    }
+
+    @Test
+    @DisplayName("Delete returns Mono error with bad request when email is empty")
+    public void delete_ReturnMonoError_whenEmailIsEmpty() {
+        webTestClient
+                .delete()
+                .uri("/user")
+                //     .headers(headers -> headers.setBasicAuth("cavalo", "cansado"))
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(405);
+    }
+
+
+    private UserDTO createNewUserDTO() {
+        return UserDTO.builder()
+                .email("jp@Caminha.campo")
+                .name("lerdo")
+                .password("nao_pifa")
+                .role(UserRoles.USER.name())
+                .build();
+    }
 }

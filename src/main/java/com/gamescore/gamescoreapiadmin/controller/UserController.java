@@ -45,7 +45,7 @@ public class UserController {
     }
 
     @PutMapping(path = "{email}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Update an user that already exist in database",
             tags = {"User"})
     public Mono<User> updateUser(@PathVariable final String email, @RequestBody final UserDTO userDTO){

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gamescore.gamescoreapiadmin.entity.User;
 import lombok.Builder;
 import lombok.Data;
+import lombok.With;
 import org.springframework.data.annotation.Id;
 
 import javax.validation.constraints.NotEmpty;
@@ -11,6 +12,7 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @Builder
+@With
 public class UserDTO {
 
     @NotNull
