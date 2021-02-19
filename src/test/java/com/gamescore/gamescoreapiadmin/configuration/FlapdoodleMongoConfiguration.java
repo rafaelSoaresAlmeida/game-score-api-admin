@@ -16,5 +16,4 @@ public class FlapdoodleMongoConfiguration {
     public ReactiveMongoTemplate reactiveMongoTemplate() {
         return new ReactiveMongoTemplate(mongoClient, "test");
     }
-
 }

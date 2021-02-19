@@ -89,7 +89,7 @@ class UserServiceTest {
         BDDMockito.when(userRepository.findByEmail(user.getEmail()))
                 .thenReturn(Mono.just(user));
 
-        BDDMockito.when(userRepository.save(userDTO.toUser()))
+        BDDMockito.when(userRepository.save(BDDMockito.any()))
                 .thenReturn(Mono.just(userDTO.toUser()));
 
         StepVerifier.create(userService.update(user.getEmail(), userDTO))
@@ -149,12 +149,11 @@ class UserServiceTest {
     @DisplayName("Delete returns Mono error when user does not exist")
     public void delete_ReturnMonoError_WhenEmptyMonoIsReturned() {
 
-        BDDMockito.when(userRepository.findByEmail(TestUtils.emailUserOne))
+        BDDMockito.when(userRepository.findByEmail(TestUtils.EMAIL_USER_ONE))
                 .thenReturn(Mono.empty());
 
-        StepVerifier.create(userService.delete(TestUtils.emailUserOne))
+        StepVerifier.create(userService.delete(TestUtils.EMAIL_USER_ONE))
                 .expectErrorMessage("404 NOT_FOUND \"".concat(UserMessages.USER_NOT_FOUND.name()).concat("\""))
                 .verify();
     }
-
 }

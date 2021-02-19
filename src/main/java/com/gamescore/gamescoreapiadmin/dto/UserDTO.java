@@ -1,11 +1,9 @@
 package com.gamescore.gamescoreapiadmin.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gamescore.gamescoreapiadmin.entity.User;
 import lombok.Builder;
 import lombok.Data;
 import lombok.With;
-import org.springframework.data.annotation.Id;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -31,7 +29,7 @@ public class UserDTO {
     @NotEmpty(message = "The user role cannot be empty")
     private String role;
 
-    public User toUser(){
+    public User toUser() {
         return User.builder()
                 .email(this.email)
                 .name(this.name)

@@ -21,8 +21,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Flux;
 
-import static com.gamescore.gamescoreapiadmin.util.TestUtils.emailUserOne;
-import static com.gamescore.gamescoreapiadmin.util.TestUtils.passwordUserOne;
+import static com.gamescore.gamescoreapiadmin.util.TestUtils.EMAIL_USER_ONE;
+import static com.gamescore.gamescoreapiadmin.util.TestUtils.PASSWORD_USER_ONE;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -57,12 +57,6 @@ public class GameScoreApiAdminIT {
         testUserTwoResponse = TestUtils.generateTestUserTwo().withPassword(null);
     }
 
-
-//    @BeforeAll
-//    public void blockHoundSetup(){
-//		BlockHound.install(builder -> builder.allowBlockingCallsInside("java.util.UUID", "randomUUID"));
-//    }
-
     @BeforeEach
     public void setup() {
         initializeData();
@@ -74,7 +68,7 @@ public class GameScoreApiAdminIT {
         webTestClient
                 .get()
                 .uri("/user")
-                .headers(headers -> headers.setBasicAuth(emailUserOne, passwordUserOne))
+                .headers(headers -> headers.setBasicAuth(EMAIL_USER_ONE, PASSWORD_USER_ONE))
                 .exchange().expectStatus().is2xxSuccessful()
                 .expectBodyList(User.class)
                 .hasSize(2)
@@ -87,7 +81,7 @@ public class GameScoreApiAdminIT {
         webTestClient
                 .get()
                 .uri("/user")
-                .headers(headers -> headers.setBasicAuth(TestUtils.emailUserTwo, TestUtils.passwordUserTwo))
+                .headers(headers -> headers.setBasicAuth(TestUtils.EMAIL_USER_TWO, TestUtils.PASSWORD_USER_TWO))
                 .exchange().expectStatus().isForbidden();
     }
 
@@ -97,7 +91,7 @@ public class GameScoreApiAdminIT {
         webTestClient
                 .get()
                 .uri("/user/".concat(testUserTwoResponse.getEmail()))
-                .headers(headers -> headers.setBasicAuth(emailUserOne, passwordUserOne))
+                .headers(headers -> headers.setBasicAuth(EMAIL_USER_ONE, PASSWORD_USER_ONE))
                 .exchange().expectStatus().is2xxSuccessful()
                 .expectBody(User.class)
                 .isEqualTo(testUserTwoResponse);
@@ -109,7 +103,7 @@ public class GameScoreApiAdminIT {
         webTestClient
                 .get()
                 .uri("/user/jp@camera_lenta.com")
-                .headers(headers -> headers.setBasicAuth(emailUserOne, passwordUserOne))
+                .headers(headers -> headers.setBasicAuth(EMAIL_USER_ONE, PASSWORD_USER_ONE))
                 .exchange().expectStatus().isNotFound()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(404);
@@ -125,7 +119,7 @@ public class GameScoreApiAdminIT {
                 .uri("/user/")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(userDTO))
-                .headers(headers -> headers.setBasicAuth(emailUserOne, passwordUserOne))
+                .headers(headers -> headers.setBasicAuth(EMAIL_USER_ONE, PASSWORD_USER_ONE))
                 .exchange()
                 .expectStatus().isCreated()
                 .expectBody(User.class)
@@ -148,7 +142,7 @@ public class GameScoreApiAdminIT {
                 .uri("/user/")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(userDTO))
-                .headers(headers -> headers.setBasicAuth(emailUserOne, passwordUserOne))
+                .headers(headers -> headers.setBasicAuth(EMAIL_USER_ONE, PASSWORD_USER_ONE))
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
@@ -166,7 +160,7 @@ public class GameScoreApiAdminIT {
                 .uri("/user/")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(userDTO))
-                .headers(headers -> headers.setBasicAuth(emailUserOne, passwordUserOne))
+                .headers(headers -> headers.setBasicAuth(EMAIL_USER_ONE, PASSWORD_USER_ONE))
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
@@ -185,7 +179,7 @@ public class GameScoreApiAdminIT {
                 .uri("/user/")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(userDTO))
-                .headers(headers -> headers.setBasicAuth(emailUserOne, passwordUserOne))
+                .headers(headers -> headers.setBasicAuth(EMAIL_USER_ONE, PASSWORD_USER_ONE))
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
@@ -203,7 +197,7 @@ public class GameScoreApiAdminIT {
                 .uri("/user/".concat(testUserTwoResponse.getEmail()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(userDTO))
-                .headers(headers -> headers.setBasicAuth(emailUserOne, passwordUserOne))
+                .headers(headers -> headers.setBasicAuth(EMAIL_USER_ONE, PASSWORD_USER_ONE))
                 .exchange()
                 .expectStatus().is2xxSuccessful()
                 .expectBody(User.class)
@@ -227,7 +221,7 @@ public class GameScoreApiAdminIT {
                 .uri("/user/".concat(testUserTwoResponse.getEmail()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(userDTO))
-                .headers(headers -> headers.setBasicAuth(emailUserOne, passwordUserOne))
+                .headers(headers -> headers.setBasicAuth(EMAIL_USER_ONE, PASSWORD_USER_ONE))
                 .exchange()
                 .expectStatus().is2xxSuccessful()
                 .expectBody(User.class)
@@ -249,7 +243,7 @@ public class GameScoreApiAdminIT {
                 .uri("/user/mengao@agoraEuSouMengao")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(userDTO))
-                .headers(headers -> headers.setBasicAuth(emailUserOne, passwordUserOne))
+                .headers(headers -> headers.setBasicAuth(EMAIL_USER_ONE, PASSWORD_USER_ONE))
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
@@ -266,7 +260,7 @@ public class GameScoreApiAdminIT {
                 .uri("/user/".concat(testUserTwoResponse.getEmail()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(userDTO))
-                .headers(headers -> headers.setBasicAuth(emailUserOne, passwordUserOne))
+                .headers(headers -> headers.setBasicAuth(EMAIL_USER_ONE, PASSWORD_USER_ONE))
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
@@ -284,7 +278,7 @@ public class GameScoreApiAdminIT {
                 .uri("/user/")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(userDTO))
-                .headers(headers -> headers.setBasicAuth(emailUserOne, passwordUserOne))
+                .headers(headers -> headers.setBasicAuth(EMAIL_USER_ONE, PASSWORD_USER_ONE))
                 .exchange()
                 .expectStatus().is4xxClientError()
                 .expectBody()
@@ -297,7 +291,7 @@ public class GameScoreApiAdminIT {
         webTestClient
                 .delete()
                 .uri("/user/".concat(testUserTwoResponse.getEmail()))
-                .headers(headers -> headers.setBasicAuth(emailUserOne, passwordUserOne))
+                .headers(headers -> headers.setBasicAuth(EMAIL_USER_ONE, PASSWORD_USER_ONE))
                 .exchange()
                 .expectStatus().isNoContent()
                 .expectBody()
@@ -310,7 +304,7 @@ public class GameScoreApiAdminIT {
         webTestClient
                 .delete()
                 .uri("/user/vander@Delay.naoPegaPenalty")
-                .headers(headers -> headers.setBasicAuth(emailUserOne, passwordUserOne))
+                .headers(headers -> headers.setBasicAuth(EMAIL_USER_ONE, PASSWORD_USER_ONE))
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
@@ -323,11 +317,10 @@ public class GameScoreApiAdminIT {
         webTestClient
                 .delete()
                 .uri("/user")
-                .headers(headers -> headers.setBasicAuth(emailUserOne, passwordUserOne))
+                .headers(headers -> headers.setBasicAuth(EMAIL_USER_ONE, PASSWORD_USER_ONE))
                 .exchange()
                 .expectStatus().is4xxClientError()
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(405);
     }
-
 }

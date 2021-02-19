@@ -37,20 +37,10 @@ public class UserService {
                 .map(userRepository::findByEmail)
                 .flatMap(userDb -> userDb.hasElement()
                         .flatMap(exist -> exist ? monoResponseStatusUserEmailAlreadyExistInDatabaseException().log("User already exist")
-                                : ApplicationUtils.isValidRole(newUser.getRole()) ? userRepository.save(newUser).log("User created")
+                                : ApplicationUtils.isValidRole(newUser.getRole()) ? userRepository
+                                .save(newUser.withPassword(ApplicationUtils.encodePassword(newUser.getPassword()))).log("User created")
                                 : monoResponseStatusInvalidUserRoleException().log("Invalid user role ->" + newUser.getRole()))
                         .then(Mono.just(newUser)));
-
-// not working .. I don't know why
-//        return userRepository.findByEmail(newUser.getEmail())
-//                .flatMap(userFound -> {
-//                    if (Objects.nonNull(userFound)) {
-//                       return monoResponseStatusUserAlreadyExistInDatabaseException().log("User already exist");
-//                    }
-//                    userRepository.save(newUser);
-//                    return newUser;
-//                });
-
     }
 
     public Mono<User> update(final String email, final UserDTO userDTO) {
@@ -80,11 +70,11 @@ public class UserService {
             }
 
             if (isNotBlank(userDTO.getPassword())) {
-                userTobeSaved.setPassword(userDTO.getPassword());
+                userTobeSaved.setPassword(ApplicationUtils.encodePassword(userDTO.getPassword()));
             }
 
             if (isNotBlank(userDTO.getRole())) {
-                if ( !ApplicationUtils.isValidRole(userDTO.getRole())) {
+                if (!ApplicationUtils.isValidRole(userDTO.getRole())) {
                     return monoResponseStatusInvalidUserRoleException();
                 }
 
