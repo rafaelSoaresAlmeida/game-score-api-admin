@@ -3,8 +3,8 @@ package com.gamescore.gamescoreapiadmin.service;
 import com.gamescore.gamescoreapiadmin.dto.UserDTO;
 import com.gamescore.gamescoreapiadmin.entity.User;
 import com.gamescore.gamescoreapiadmin.enumerator.UserMessages;
-import com.gamescore.gamescoreapiadmin.enumerator.UserRoles;
 import com.gamescore.gamescoreapiadmin.repository.UserRepository;
+import com.gamescore.gamescoreapiadmin.util.ApplicationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,7 +13,6 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static org.apache.commons.lang3.EnumUtils.isValidEnumIgnoreCase;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
@@ -38,8 +37,9 @@ public class UserService {
                 .map(userRepository::findByEmail)
                 .flatMap(userDb -> userDb.hasElement()
                         .flatMap(exist -> exist ? monoResponseStatusUserEmailAlreadyExistInDatabaseException().log("User already exist")
-                                : isValidEnumIgnoreCase(UserRoles.class, newUser.getRole()) ? userRepository.save(newUser).log("User created") : monoResponseStatusInvalidUserRoleException().log("Invalid user role"))
-                        .then(Mono.just(newUser.withPassword(UserMessages.SENSITIVE_DATA.name()))));
+                                : ApplicationUtils.isValidRole(newUser.getRole()) ? userRepository.save(newUser).log("User created")
+                                : monoResponseStatusInvalidUserRoleException().log("Invalid user role ->" + newUser.getRole()))
+                        .then(Mono.just(newUser)));
 
 // not working .. I don't know why
 //        return userRepository.findByEmail(newUser.getEmail())
@@ -58,14 +58,8 @@ public class UserService {
         return Mono.just(email)
                 .map(this::findByEmail)
                 .flatMap(userFound -> {
-                    if (!isValidEnumIgnoreCase(UserRoles.class, userDTO.getRole())) {
-                        return monoResponseStatusInvalidUserRoleException();
-                    }
-
-                    return userFound.flatMap(user -> {
-                        final User userUpdated = updateUserFields(userDTO, user);
-                        return userRepository.save(userUpdated).log("User updated");
-                    });
+                    final Mono<User> userUpdated = updateUserFields(userDTO, userFound);
+                    return userUpdated.flatMap(user -> userRepository.save(user).log("User updated"));
                 });
     }
 
@@ -75,24 +69,29 @@ public class UserService {
                 .flatMap(userRepository::delete).log("User deleted");
     }
 
-    private User updateUserFields(final UserDTO userDTO, final User userTobeSaved) {
-        if (isNotBlank(userDTO.getEmail())) {
-            userTobeSaved.setEmail(userDTO.getEmail());
-        }
+    private Mono<User> updateUserFields(final UserDTO userDTO, final Mono<User> userTobeUpdate) {
+        return userTobeUpdate.flatMap(userTobeSaved -> {
+            if (isNotBlank(userDTO.getEmail())) {
+                userTobeSaved.setEmail(userDTO.getEmail());
+            }
 
-        if (isNotBlank(userDTO.getName())) {
-            userTobeSaved.setName(userDTO.getName());
-        }
+            if (isNotBlank(userDTO.getName())) {
+                userTobeSaved.setName(userDTO.getName());
+            }
 
-        if (isNotBlank(userDTO.getPassword())) {
-            userTobeSaved.setPassword(userDTO.getPassword());
-        }
+            if (isNotBlank(userDTO.getPassword())) {
+                userTobeSaved.setPassword(userDTO.getPassword());
+            }
 
-        if (isNotBlank(userDTO.getRole())) {
-            userTobeSaved.setRole(userDTO.getRole());
-        }
+            if (isNotBlank(userDTO.getRole())) {
+                if ( !ApplicationUtils.isValidRole(userDTO.getRole())) {
+                    return monoResponseStatusInvalidUserRoleException();
+                }
 
-        return userTobeSaved;
+                userTobeSaved.setRole(userDTO.getRole());
+            }
+            return Mono.just(userTobeSaved);
+        });
     }
 
     public <T> Mono<T> monoResponseStatusNotFoundException() {
