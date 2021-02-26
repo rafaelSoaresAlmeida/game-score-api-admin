@@ -41,7 +41,7 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
             }
             return Mono.just(new UsernamePasswordAuthenticationToken(claims.getSubject(), null, authorities));
         } catch (Exception e) {
-            log.error("Error on authenticate filer", e);
+            log.error("Error on authenticate", e);
             return Mono.empty();
         }
     }

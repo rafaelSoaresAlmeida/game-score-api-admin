@@ -9,7 +9,8 @@ public enum UserMessages {
 
     USER_EMAIL_ALREADY_EXIST_DATABASE("001-User email already exist on database"),
     USER_NOT_FOUND("002-User not found"),
-    INVALID_USER_ROLE("003-Invalid user role");
+    INVALID_USER_ROLE("003-Invalid user role"),
+    USER_NOT_AUTHORIZED("004-User not authorized");
 
     private String message;
 }

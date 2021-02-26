@@ -1,5 +1,6 @@
 package com.gamescore.gamescoreapiadmin.service;
 
+import com.gamescore.gamescoreapiadmin.configuration.PBKDF2Encoder;
 import com.gamescore.gamescoreapiadmin.dto.UserDTO;
 import com.gamescore.gamescoreapiadmin.entity.User;
 import com.gamescore.gamescoreapiadmin.enumerator.UserMessages;
@@ -22,6 +23,8 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    private final PBKDF2Encoder passwordEncoder;
+
     public Flux<User> findAll() {
         return userRepository.findAll();
     }
@@ -38,7 +41,7 @@ public class UserService {
                 .flatMap(userDb -> userDb.hasElement()
                         .flatMap(exist -> exist ? monoResponseStatusUserEmailAlreadyExistInDatabaseException().log("User already exist")
                                 : ApplicationUtils.isValidRole(newUser.getRole()) ? userRepository
-                                .save(newUser.withPassword(ApplicationUtils.encodePassword(newUser.getPassword()))).log("User created")
+                                .save(newUser.withPassword(passwordEncoder.encode(newUser.getPassword()))).log("User created")
                                 : monoResponseStatusInvalidUserRoleException().log("Invalid user role ->" + newUser.getRole()))
                         .then(Mono.just(newUser)));
     }
