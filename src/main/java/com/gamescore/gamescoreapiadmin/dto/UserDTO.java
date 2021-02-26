@@ -7,11 +7,12 @@ import lombok.With;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Data
 @Builder
 @With
-public class UserDTO {
+public class UserDTO implements Serializable {
 
     @NotNull
     @NotEmpty(message = "The user email cannot be empty")

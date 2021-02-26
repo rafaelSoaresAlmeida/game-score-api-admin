@@ -2,3 +2,13 @@ spring:
   data:
     mongodb:
       uri: ${SPRING_DATA_MONGODB_URI}
+
+springbootwebfluxjjwt:
+  jjwt:
+    secret: ${SPRING_JWT_SECRET}
+    expiration: ${SPRING_JWT_EXPIRATION}
+  password:
+    encoder:
+      secret: ${SPRING_PASSWORD_SECRET_ENCODER}
+      iteration: 33
+      keylength: 256
