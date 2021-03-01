@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -26,8 +25,7 @@ import reactor.core.publisher.Flux;
 
 import java.time.Duration;
 
-import static com.gamescore.gamescoreapiadmin.util.TestUtils.EMAIL_USER_ONE;
-import static com.gamescore.gamescoreapiadmin.util.TestUtils.PASSWORD_USER_ONE;
+import static com.gamescore.gamescoreapiadmin.util.TestUtils.PASSWORD;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -79,17 +77,6 @@ public class GameScoreApiAdminIT {
                 .expectBodyList(User.class)
                 .hasSize(2)
                 .contains(testUserOneResponse, testUserTwoResponse);
-    }
-
-    @Test
-    @DisplayName("listAll returns 403 FORBIDDEN when user not have admin acess")
-    public void listAll_Return403_WhenUserNotHaveAdminAccess() {
-        token = getToken();
-        webTestClient
-                .get()
-                .uri("/user")
-                .headers(headers -> headers.setBearerAuth(token))
-                .exchange().expectStatus().isForbidden();
     }
 
     @Test
@@ -346,9 +333,9 @@ public class GameScoreApiAdminIT {
     }
 
     @Test
-    @DisplayName("user login with success")
+    @DisplayName("user login return 200 success")
     public void loginUser_Return200_WhenUserLoginSuccess() {
-        final AuthRequest authRequest = AuthRequest.builder().username(TestUtils.EMAIL_USER_ONE).password(PASSWORD_USER_ONE).build();
+        final AuthRequest authRequest = AuthRequest.builder().username(TestUtils.EMAIL_USER_ONE).password(PASSWORD).build();
         webTestClient
                 .mutate()
                 .responseTimeout(Duration.ofMillis(30000)).build()
@@ -363,9 +350,9 @@ public class GameScoreApiAdminIT {
     }
 
     @Test
-    @DisplayName("user login return 401 unauthorized")
+    @DisplayName("user login returns 401 unauthorized")
     public void loginUser_Return401_WhenUserSendWrongPassword() {
-        final AuthRequest authRequest = AuthRequest.builder().username(TestUtils.EMAIL_USER_ONE).password(PASSWORD_USER_ONE).build();
+        final AuthRequest authRequest = AuthRequest.builder().username(TestUtils.EMAIL_USER_ONE).password(PASSWORD).build();
         webTestClient
                 .mutate()
                 .responseTimeout(Duration.ofMillis(30000)).build()
@@ -378,22 +365,36 @@ public class GameScoreApiAdminIT {
     }
 
     @Test
-    @DisplayName("user login return 401 when user not exist in database")
+    @DisplayName("user login returns 401 when user not exist in database")
     public void loginUser_Return401_WhenUserSendUserNotExist() {
-        final AuthRequest authRequest = AuthRequest.builder().username("DouraGold@Ouro.com").password(PASSWORD_USER_ONE).build();
         webTestClient
                 .mutate()
                 .responseTimeout(Duration.ofMillis(30000)).build()
                 .post()
                 .uri("/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(AuthRequest.builder().username("DouraGold@Ouro.com").password(PASSWORD_USER_ONE).build()))
+                .body(BodyInserters.fromValue(AuthRequest.builder().username("DouraGold@Ouro.com").password(PASSWORD).build()))
                 .exchange()
                 .expectStatus().isUnauthorized();
     }
 
+    @Test
+    @DisplayName("user login returns 403 Forbidden when user not have admin role")
+    public void loginUser_Return403_WhenUserNotHaveAdminRole() {
+        final AuthRequest authRequest = AuthRequest.builder().username(TestUtils.EMAIL_USER_TWO).password(PASSWORD).build();
+        webTestClient
+                .mutate()
+                .responseTimeout(Duration.ofMillis(30000)).build()
+                .post()
+                .uri("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(authRequest))
+                .exchange()
+                .expectStatus().isForbidden();
+    }
+
     public String getToken() {
-        final AuthRequest authRequest = AuthRequest.builder().username(TestUtils.EMAIL_USER_ONE).password(PASSWORD_USER_ONE).build();
+        final AuthRequest authRequest = AuthRequest.builder().username(TestUtils.EMAIL_USER_ONE).password(PASSWORD).build();
         return webTestClient
                 .mutate()
                 .responseTimeout(Duration.ofMillis(30000)).build()

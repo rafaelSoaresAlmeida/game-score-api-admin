@@ -1,5 +1,6 @@
 package com.gamescore.gamescoreapiadmin.service;
 
+import com.gamescore.gamescoreapiadmin.configuration.PBKDF2Encoder;
 import com.gamescore.gamescoreapiadmin.dto.UserDTO;
 import com.gamescore.gamescoreapiadmin.entity.User;
 import com.gamescore.gamescoreapiadmin.enumerator.UserMessages;
@@ -15,8 +16,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.apache.logging.log4j.util.Strings.EMPTY;
-
 @ExtendWith(SpringExtension.class)
 class UserServiceTest {
 
@@ -26,6 +25,9 @@ class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private PBKDF2Encoder pbkdf2Encoder;
+
     private User user;
 
     private UserDTO userDTO;
@@ -34,16 +36,20 @@ class UserServiceTest {
     @DisplayName("createUser creates a new user when successful")
     public void save_CreatesUser_whenSuccessful() {
 
-        user = TestUtils.generateTestUserOne().withPassword(EMPTY);
+        user = TestUtils.generateTestUserOne();
+        user.setPassword(TestUtils.PASSWORD);
         BDDMockito.when(userRepository.findByEmail(user.getEmail()))
                 .thenReturn(Mono.empty());
 
         BDDMockito.when(userRepository.save(user))
                 .thenReturn(Mono.just(user));
 
+        BDDMockito.when(pbkdf2Encoder.encode(BDDMockito.any()))
+                .thenReturn(TestUtils.PASSWORD);
+
         StepVerifier.create(userService.create(user))
                 .expectSubscription()
-                .expectNext(user.withPassword(""))
+                .expectNext(user)
                 .verifyComplete();
     }
 

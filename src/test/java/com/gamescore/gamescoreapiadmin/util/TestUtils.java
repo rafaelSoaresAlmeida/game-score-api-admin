@@ -6,20 +6,19 @@ import com.gamescore.gamescoreapiadmin.enumerator.UserRoles;
 
 public class TestUtils {
 
-    final public static String PASSWORD_ENCRYPTED_USER_ONE = "NAnPeftUqji+FIR+rODW8azyqyclo0khCvZsZvngxWg=";
-    final public static String PASSWORD_ENCRYPTED_USER_TWO = "{bcrypt}$2a$10$btM5.FA1BlbazQjo79E6MedKLlDE5PsSab5tCOkdkuHLb6xztWZSC";
+    final public static String PASSWORD_ENCRYPTED = "NAnPeftUqji+FIR+rODW8azyqyclo0khCvZsZvngxWg=";
 
     final public static String EMAIL_USER_ONE = "capitao@desumano.com";
     final public static String EMAIL_USER_TWO = "Joelho@titanio.com";
 
-    final public static String PASSWORD_USER_ONE = "cavalo";
+    final public static String PASSWORD = "cavalo";
 
     public static User generateTestUserOne() {
-        return generateUser(EMAIL_USER_ONE, "cansado", PASSWORD_ENCRYPTED_USER_ONE, UserRoles.ADMIN.getRole());
+        return generateUser(EMAIL_USER_ONE, "cansado", PASSWORD_ENCRYPTED, UserRoles.ADMIN.getRole());
     }
 
     public static User generateTestUserTwo() {
-        return generateUser(EMAIL_USER_TWO, "Thacigod", PASSWORD_ENCRYPTED_USER_TWO, UserRoles.USER.getRole());
+        return generateUser(EMAIL_USER_TWO, "Thacigod", PASSWORD_ENCRYPTED, UserRoles.USER.getRole());
     }
 
     public static UserDTO createNewUserDTO() {

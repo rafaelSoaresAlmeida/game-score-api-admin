@@ -5,6 +5,7 @@ import com.gamescore.gamescoreapiadmin.dto.AuthRequest;
 import com.gamescore.gamescoreapiadmin.dto.AuthResponse;
 import com.gamescore.gamescoreapiadmin.entity.User;
 import com.gamescore.gamescoreapiadmin.enumerator.UserMessages;
+import com.gamescore.gamescoreapiadmin.enumerator.UserRoles;
 import com.gamescore.gamescoreapiadmin.repository.UserRepository;
 import com.gamescore.gamescoreapiadmin.util.JWTUtils;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
-import java.util.Objects;
+import static java.util.Objects.isNull;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +31,16 @@ public class AuthenticationService {
                 .map(this::findByEmail)
                 .flatMap(userDb -> {
                             return userDb.flatMap(userDetails -> {
-                                return (Objects.nonNull(userDetails) && passwordEncoder.encode(authRequest.getPassword()).equals(userDetails.getPassword()))
+
+                                if (isNull(userDetails)) {
+                                    return monoResponseUnauthorizedException();
+                                }
+
+                                if (!userDetails.getRole().equals(UserRoles.ADMIN.getRole())) {
+                                    return monoResponseForbiddenException();
+                                }
+
+                                return passwordEncoder.encode(authRequest.getPassword()).equals(userDetails.getPassword())
                                         ? Mono.just(AuthResponse.builder().token(jwtUtils.generateToken(userDetails)).build())
                                         : monoResponseUnauthorizedException();
                             });
@@ -43,7 +53,11 @@ public class AuthenticationService {
                 monoResponseUnauthorizedException());
     }
 
+    public <T> Mono<T> monoResponseForbiddenException() {
+        return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, UserMessages.USER_NOT_AUTHORIZED_ACCESS_RESOURCE.name()));
+    }
+
     public <T> Mono<T> monoResponseUnauthorizedException() {
-        return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, UserMessages.USER_NOT_AUTHORIZED.name()));
+        return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, UserMessages.USER_NOT_AUTHENTICATED.name()));
     }
 }

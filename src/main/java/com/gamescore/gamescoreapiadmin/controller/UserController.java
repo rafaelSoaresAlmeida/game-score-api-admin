@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -52,8 +51,8 @@ public class UserController {
     @Operation(summary = "Create a new user in database",
             security = @SecurityRequirement(name = "Basic Authentication"),
             tags = {"User"})
-    public Mono<User> createUser(@Valid @RequestBody final UserDTO userDTO){
-        return  userService.create(userDTO.toUser());
+    public Mono<User> createUser(@Valid @RequestBody final UserDTO userDTO) {
+        return userService.create(userDTO.toUser());
     }
 
     @PutMapping(path = "{email}")
@@ -61,8 +60,8 @@ public class UserController {
     @Operation(summary = "Update an user that already exist in database",
             security = @SecurityRequirement(name = "Basic Authentication"),
             tags = {"User"})
-    public Mono<User> updateUser(@PathVariable final String email, @RequestBody final UserDTO userDTO){
-        return  userService.update(email, userDTO);
+    public Mono<User> updateUser(@PathVariable final String email, @RequestBody final UserDTO userDTO) {
+        return userService.update(email, userDTO);
     }
 
     @DeleteMapping(path = "{email}")
@@ -70,7 +69,7 @@ public class UserController {
     @Operation(summary = "Delete an user in database",
             security = @SecurityRequirement(name = "Basic Authentication"),
             tags = {"User"})
-    public Mono<Void> deleteUserByEmail(@PathVariable final String email){
-        return  userService.delete(email);
+    public Mono<Void> deleteUserByEmail(@PathVariable final String email) {
+        return userService.delete(email);
     }
 }
