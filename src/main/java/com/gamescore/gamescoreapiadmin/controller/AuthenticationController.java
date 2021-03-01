@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import javax.validation.Valid;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -19,7 +21,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public Mono<ResponseEntity<?>> login(@RequestBody AuthRequest ar) {
+    public Mono<ResponseEntity<?>> login(@Valid @RequestBody AuthRequest ar) {
         return Mono.just(ResponseEntity.ok(authenticationService.login(ar)));
     }
 }

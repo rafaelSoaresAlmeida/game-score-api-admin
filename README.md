@@ -5,7 +5,7 @@ This program is an Async API to administrate users (create, update and delete) t
 ## Technologies(Frameworks and Plugins)
 This project I have developed using Intellij IDE and these technologies and frameworks:
 
-	-Java 8
+	-Java 15 (OPEN JDK)
     -Springboot,
     -Spring Webflux
     -Spring Security,

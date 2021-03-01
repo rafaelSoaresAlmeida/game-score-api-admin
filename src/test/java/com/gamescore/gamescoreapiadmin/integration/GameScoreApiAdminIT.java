@@ -9,6 +9,7 @@ import com.gamescore.gamescoreapiadmin.enumerator.UserRoles;
 import com.gamescore.gamescoreapiadmin.repository.UserRepository;
 import com.gamescore.gamescoreapiadmin.util.TestUtils;
 import de.bwaldvogel.mongo.backend.Assert;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import reactor.core.publisher.Flux;
 import java.time.Duration;
 
 import static com.gamescore.gamescoreapiadmin.util.TestUtils.PASSWORD;
+import static org.apache.logging.log4j.util.Strings.EMPTY;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -379,7 +381,7 @@ public class GameScoreApiAdminIT {
     }
 
     @Test
-    @DisplayName("user login returns 403 Forbidden when user not have admin role")
+    @DisplayName("user login returns 403 FORBIDDEN when user not have admin role")
     public void loginUser_Return403_WhenUserNotHaveAdminRole() {
         final AuthRequest authRequest = AuthRequest.builder().username(TestUtils.EMAIL_USER_TWO).password(PASSWORD).build();
         webTestClient
@@ -391,6 +393,36 @@ public class GameScoreApiAdminIT {
                 .body(BodyInserters.fromValue(authRequest))
                 .exchange()
                 .expectStatus().isForbidden();
+    }
+
+    @Test
+    @DisplayName("user login returns 404 BAD REQUEST when user name is blank")
+    public void loginUser_Return404_WhenUserNameIsBlank() {
+        final AuthRequest authRequest = AuthRequest.builder().username(StringUtils.EMPTY).password(PASSWORD).build();
+        webTestClient
+                .mutate()
+                .responseTimeout(Duration.ofMillis(30000)).build()
+                .post()
+                .uri("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(authRequest))
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    @DisplayName("user login returns 404 BAD REQUEST when user password is blank")
+    public void loginUser_Return404_WhenPasswordIsBlank() {
+        final AuthRequest authRequest = AuthRequest.builder().username(TestUtils.EMAIL_USER_ONE).password(EMPTY).build();
+        webTestClient
+                .mutate()
+                .responseTimeout(Duration.ofMillis(30000)).build()
+                .post()
+                .uri("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(authRequest))
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 
     public String getToken() {
