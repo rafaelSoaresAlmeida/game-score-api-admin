@@ -9,6 +9,8 @@ springbootwebfluxjjwt:
     expiration: ${SPRING_JWT_EXPIRATION}
   password:
     encoder:
-      secret: ${SPRING_PASSWORD_SECRET_ENCODER}
-      iteration: 33
-      keylength: 256
+      secret: ${PWD_SECRET_ENCODER}
+      iteration: ${ITERATION}
+      keylength: ${KEY_LENGTH}
+      IV: ${IV}
+      salt: ${SALT}

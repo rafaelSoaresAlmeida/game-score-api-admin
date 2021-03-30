@@ -1,6 +1,6 @@
 package com.gamescore.gamescoreapiadmin.service;
 
-import com.gamescore.gamescoreapiadmin.configuration.PBKDF2Encoder;
+import com.gamescore.gamescoreapiadmin.configuration.AESEncoder;
 import com.gamescore.gamescoreapiadmin.dto.UserDTO;
 import com.gamescore.gamescoreapiadmin.entity.User;
 import com.gamescore.gamescoreapiadmin.enumerator.UserMessages;
@@ -26,7 +26,7 @@ class UserServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private PBKDF2Encoder pbkdf2Encoder;
+    private AESEncoder aesEncoder;
 
     private User user;
 
@@ -44,7 +44,7 @@ class UserServiceTest {
         BDDMockito.when(userRepository.save(user))
                 .thenReturn(Mono.just(user));
 
-        BDDMockito.when(pbkdf2Encoder.encode(BDDMockito.any()))
+        BDDMockito.when(aesEncoder.encode(BDDMockito.any()))
                 .thenReturn(TestUtils.PASSWORD);
 
         StepVerifier.create(userService.create(user))

@@ -3,6 +3,7 @@ package com.gamescore.gamescoreapiadmin.configuration;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -14,20 +15,27 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
 @Component
+@SuppressWarnings({"PMD.UnusedPrivateMethod"})
 public class AESEncoder implements PasswordEncoder {
 
-    // @Value("${springbootwebfluxjjwt.password.encoder.secret}")
-    private static final String PWD_KEY = "the Vaca Jairo is super star";
+    @Value("${springbootwebfluxjjwt.password.encoder.secret}")
+    private String PWD_KEY;
 
-    private static final int KEY_SIZE = 128;
-    private static final int ITERATION_COUNT = 10000;
-    private static final String IV = "F27D5C9927726BCEFE7510B1BDD3D137";
-    private static final String SALT = "3FF2EC019C627B945225DEBAD71A01B6985FE84C95A70EB132882F88C0A59A55";
+    @Value("${springbootwebfluxjjwt.password.encoder.keylength}")
+    private int KEY_SIZE;
+
+    @Value("${springbootwebfluxjjwt.password.encoder.iteration}")
+    private int ITERATION_COUNT;
+
+    @Value("${springbootwebfluxjjwt.password.encoder.IV}")
+    private String IV;
+
+    @Value("${springbootwebfluxjjwt.password.encoder.salt}")
+    private String SALT;
 
     private final Cipher cipher;
 
@@ -35,7 +43,7 @@ public class AESEncoder implements PasswordEncoder {
         try {
             cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-            throw fail(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -46,21 +54,9 @@ public class AESEncoder implements PasswordEncoder {
             byte[] encrypted = doFinal(Cipher.ENCRYPT_MODE, key, IV, cs.toString().getBytes("UTF-8"));
             return base64(encrypted);
         } catch (UnsupportedEncodingException e) {
-            throw fail(e);
+            throw new RuntimeException(e);
         }
     }
-
-//    public String encode2(String cs) {
-//        try {
-//            SecretKey key = generateKey(SALT, PWD_KEY);
-//            byte[] encrypted = doFinal(Cipher.ENCRYPT_MODE, key, IV, cs.getBytes("UTF-8"));
-//            System.out.println("99999 -> [" + encrypted + "]");
-//            return base64(encrypted);
-//        } catch (UnsupportedEncodingException e) {
-//            throw fail(e);
-//        }
-//    }
-
 
     public String decode(final String text) {
         try {
@@ -68,7 +64,7 @@ public class AESEncoder implements PasswordEncoder {
             byte[] decrypted = doFinal(Cipher.DECRYPT_MODE, key, IV, base64(text));
             return new String(decrypted, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            throw fail(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -85,7 +81,7 @@ public class AESEncoder implements PasswordEncoder {
                 | InvalidAlgorithmParameterException
                 | IllegalBlockSizeException
                 | BadPaddingException e) {
-            throw fail(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -96,14 +92,8 @@ public class AESEncoder implements PasswordEncoder {
             SecretKey key = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
             return key;
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw fail(e);
+            throw new RuntimeException(e);
         }
-    }
-
-    private String random(int length) {
-        byte[] salt = new byte[length];
-        new SecureRandom().nextBytes(salt);
-        return hex(salt);
     }
 
     private String base64(byte[] bytes) {
@@ -124,10 +114,6 @@ public class AESEncoder implements PasswordEncoder {
         } catch (DecoderException e) {
             throw new IllegalStateException(e);
         }
-    }
-
-    private IllegalStateException fail(Exception e) {
-        return new IllegalStateException(e);
     }
 
 }

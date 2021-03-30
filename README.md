@@ -47,7 +47,11 @@ To run application you need to set two environment variables:
            -SPRING_DATA_MONGODB_URI= <Mongo DB uri configuration>
            -SPRING_JWT_SECRET= <String>
            -SPRING_JWT_EXPIRATION= <ex: 28800>
-           -SPRING_PASSWORD_SECRET_ENCODER= <String>  
+           -PWD_SECRET_ENCODER=the_Vaca_Jairo_is_super_star
+           -ITERATION=<Number>
+           -KEY_LENGTH=<Number>
+           -IV=<String>
+           -SALT=<String>
 
 Also, you need to set an administrator user in your Mongo database to access the endpoint that are protected by Spring Security with JWT, see the example below of a document that belongs an administrator user:
  ```bash
@@ -55,7 +59,7 @@ Also, you need to set an administrator user in your Mongo database to access the
     "_id":{"$oid":"602ed94c1839b4e6acb6a01b"},
     "email":"userTest@test.com",
     "name":"Cansado",
-    "password":"<password encoded by PBKDF2Encoder class>",
+    "password":"<password encoded by AESEncoder class>",
     "role":"ROLE_ADMIN"
 }
 ```

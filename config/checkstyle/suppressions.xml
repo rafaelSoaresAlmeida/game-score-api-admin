@@ -93,6 +93,10 @@
     <suppress checks="ConstantName"
               files=".*[/\\]subprojects[/\\]architecture-test[/\\]src[/\\]test[/\\]java[/\\]org[/\\]gradle[/\\].+" />
 
+    <!-- Ignore Member name for architecture tests since we want to use snake case there -->
+    <suppress checks="MemberName"
+              files=".*"/>
+
     <!-- Ignore all checks for the generated sources of org.gradle.samples plugin -->
     <suppress checks=".*" files=".*[/\\]subprojects[/\\]docs[/\\]build[/\\]generated-source-sets[/\\].+" />
     <suppress checks=".*" files=".*[/\\]buildSrc[/\\].*[/\\]groovy-dsl-plugins[/\\].+" />

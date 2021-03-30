@@ -1,6 +1,6 @@
 package com.gamescore.gamescoreapiadmin.service;
 
-import com.gamescore.gamescoreapiadmin.configuration.PBKDF2Encoder;
+import com.gamescore.gamescoreapiadmin.configuration.AESEncoder;
 import com.gamescore.gamescoreapiadmin.dto.AuthRequest;
 import com.gamescore.gamescoreapiadmin.dto.AuthResponse;
 import com.gamescore.gamescoreapiadmin.entity.User;
@@ -22,7 +22,7 @@ public class AuthenticationService {
 
     private final JWTUtils jwtUtils;
 
-    private final PBKDF2Encoder passwordEncoder;
+    private final AESEncoder aesEncoder;
 
     private final UserRepository userRepository;
 
@@ -40,7 +40,7 @@ public class AuthenticationService {
                                     return monoResponseForbiddenException();
                                 }
 
-                                return passwordEncoder.encode(authRequest.getPassword()).equals(userDetails.getPassword())
+                                return aesEncoder.encode(authRequest.getPassword()).equals(userDetails.getPassword())
                                         ? Mono.just(AuthResponse.builder().token(jwtUtils.generateToken(userDetails)).build())
                                         : monoResponseUnauthorizedException();
                             });

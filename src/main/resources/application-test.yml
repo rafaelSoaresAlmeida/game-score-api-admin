@@ -9,6 +9,9 @@ springbootwebfluxjjwt:
     expiration: 28800
   password:
     encoder:
-      secret: mysecret
-      iteration: 33
-      keylength: 256
+      secret: thacigod_bruxo_do_Renato_foi_embora
+      iteration: 10000
+      keylength: 128
+      IV: F27D5C9927726BCEFE7510B1BDD3D137
+      salt: 3FF2EC019C627B945225DEBAD71A01B6985FE84C95A70EB132882F88C0A59A55
+
